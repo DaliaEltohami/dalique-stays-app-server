@@ -5,6 +5,12 @@ const CreateError = require("../utils/appError");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const { v4: uuidv4 } = require("uuid");
 
+const getBaseUrl = (req) => {
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol;
+  const host = req.get("host");
+  return `${protocol}://${host}`;
+};
+
 exports.roomBooking = async (req, res, next) => {
   const bookingData = { ...req.body.newBooking };
   try {
@@ -26,6 +32,9 @@ exports.roomBooking = async (req, res, next) => {
       return next(new CreateError("Missing required booking fields", 400));
     }
 
+    // Get the base URL from the current request
+    const baseUrl = getBaseUrl(req);
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [
@@ -41,8 +50,8 @@ exports.roomBooking = async (req, res, next) => {
           quantity: bookingData.duration,
         },
       ],
-      success_url: "http://localhost:3000/app/payment-success",
-      cancel_url: "http://localhost:3000/app/payment-cancelled",
+      success_url: `${baseUrl}/app/payment-success`,
+      cancel_url: `${baseUrl}/app/payment-cancelled`,
     });
 
     // res.redirect(303, session.url);
