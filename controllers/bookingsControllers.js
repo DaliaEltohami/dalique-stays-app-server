@@ -37,20 +37,30 @@ exports.roomBooking = async (req, res, next) => {
       if (room.currentbookings?.length > 0) {
         const hasConflict = room.currentbookings.some((booking) => {
           if (
-            dayjs(fromDate).isBetween(
+            dayjs(bookingData.fromDate).isBetween(
               booking.fromDate,
               booking.toDate,
               "day",
               "[]"
             ) ||
-            dayjs(toDate).isBetween(
+            dayjs(bookingData.toDate).isBetween(
               booking.fromDate,
               booking.toDate,
               "day",
               "[]"
             ) ||
-            dayjs(booking.fromDate).isBetween(fromDate, toDate, "day", "[]") ||
-            dayjs(booking.toDate).isBetween(fromDate, toDate, "day", "[]")
+            dayjs(booking.fromDate).isBetween(
+              bookingData.fromDate,
+              bookingData.toDate,
+              "day",
+              "[]"
+            ) ||
+            dayjs(booking.toDate).isBetween(
+              bookingData.fromDate,
+              bookingData.toDate,
+              "day",
+              "[]"
+            )
           ) {
             if (booking.status !== "cancelled") {
               return true;
